@@ -1,0 +1,33 @@
+import { MappingModel } from './mapping.model';
+import { LookupTable } from '../models/lookup.table.model';
+import { ConfigModel } from '../models/config.model';
+import { Field } from '../models/field.model';
+import { DocumentDefinition } from '../models/document.definition.model';
+export declare class MappingDefinition {
+    name: string;
+    mappings: MappingModel[];
+    activeMapping: MappingModel;
+    parsedDocs: DocumentDefinition[];
+    templateText: string;
+    private tables;
+    private tablesBySourceTargetKey;
+    private tablesByName;
+    constructor();
+    templateExists(): boolean;
+    addTable(table: LookupTable): void;
+    getTableByName(name: string): LookupTable;
+    detectTableIdentifiers(): void;
+    getTableBySourceTarget(sourceIdentifier: string, targetIdentifier: string): LookupTable;
+    getTables(): LookupTable[];
+    getFirstMappingForLookupTable(lookupTableName: string): MappingModel;
+    removeStaleMappings(cfg: ConfigModel): void;
+    isMappingStale(mapping: MappingModel, sourceFieldPaths: string[], targetSourcePaths: string[]): boolean;
+    initializeMappingLookupTable(m: MappingModel): void;
+    updateMappingsFromDocuments(cfg: ConfigModel): void;
+    updateDocumentNamespacesFromMappings(cfg: ConfigModel): void;
+    getAllMappings(includeActiveMapping: boolean): MappingModel[];
+    findMappingsForField(field: Field): MappingModel[];
+    removeMapping(m: MappingModel): boolean;
+    removeFieldFromAllMappings(field: Field): void;
+    private updateMappedFieldsFromDocuments(fieldPair, cfg, docMap, isSource);
+}

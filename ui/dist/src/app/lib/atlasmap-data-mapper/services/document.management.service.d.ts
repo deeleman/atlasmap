@@ -1,0 +1,34 @@
+import { Http } from '@angular/http';
+import 'rxjs/add/operator/toPromise';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/forkJoin';
+import { ConfigModel } from '../models/config.model';
+import { DocumentDefinition } from '../models/document.definition.model';
+export declare class DocumentManagementService {
+    private http;
+    cfg: ConfigModel;
+    private headers;
+    constructor(http: Http);
+    initialize(): void;
+    fetchClassPath(): Observable<string>;
+    fetchDocument(docDef: DocumentDefinition, classPath: string): Observable<DocumentDefinition>;
+    private createDocumentFetchRequest(docDef, classPath);
+    private parseDocumentResponse(responseJson, docDef);
+    private extractJSONDocumentDefinitionFromInspectionResponse(responseJson, docDef);
+    private extractJSONDocumentDefinition(body, docDef);
+    private extractXMLDocumentDefinitionFromInspectionResponse(responseJson, docDef);
+    private extractXMLDocumentDefinition(body, docDef);
+    private extractJavaDocumentDefinitionFromInspectionResponse(responseJson, docDef);
+    private extractJavaDocumentDefinition(body, docDef);
+    private parseJSONFieldFromDocument(field, parentField, docDef);
+    private parseFieldFromDocument(field, parentField, docDef);
+    private parseXMLFieldFromDocument(field, parentField, docDef);
+    private parseJavaFieldFromDocument(field, parentField, docDef);
+    static generateMockInstanceXMLDoc(): string;
+    static generateMockSchemaXMLDoc(): string;
+    static generateMockJSONDoc(): string;
+    static generateMockJSONInstanceDoc(): string;
+    static generateMockJSONSchemaDoc(): string;
+    static generateMockJavaDoc(): string;
+    private handleError(message, error);
+}

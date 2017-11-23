@@ -1,0 +1,35 @@
+import { ElementRef, QueryList } from '@angular/core';
+import { ConfigModel } from '../models/config.model';
+import { Field } from '../models/field.model';
+import { DocumentDefinition } from '../models/document.definition.model';
+import { DocumentFieldDetailComponent } from './document.field.detail.component';
+import { LineMachineComponent } from './line.machine.component';
+import { ModalWindowComponent } from './modal.window.component';
+export declare class DocumentDefinitionComponent {
+    cfg: ConfigModel;
+    isSource: boolean;
+    lineMachine: LineMachineComponent;
+    modalWindow: ModalWindowComponent;
+    documentDefinitionElement: ElementRef;
+    fieldComponents: QueryList<DocumentFieldDetailComponent>;
+    docElements: QueryList<ElementRef>;
+    private searchMode;
+    private searchFilter;
+    private scrollTop;
+    private searchResultsExist;
+    getDocDefElementPosition(docDef: DocumentDefinition): any;
+    getFieldDetailComponent(field: Field): DocumentFieldDetailComponent;
+    getElementPosition(): any;
+    getElementPositionForElement(el: any, addScrollTop: boolean, subtractScrollTop: boolean): any;
+    getFieldDetailComponentPosition(field: Field): any;
+    getSearchIconCSSClass(): string;
+    private getSourcesTargetsLabel();
+    private isAddFieldAvailable(docDef);
+    private isDocNameVisible(docDef);
+    private toggleFieldVisibility(docDef);
+    private getFieldCount();
+    private search(searchFilter);
+    private handleScroll(event);
+    private toggleSearch();
+    private addField(docDef, event);
+}
