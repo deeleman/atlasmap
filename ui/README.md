@@ -40,22 +40,22 @@ Running the Data Mapper in stand alone mode will require installing the Data Map
 
 ## Developing Within Syndesis UI ##
 
-The Data Mapper UI is referenced by Syndesis as a dependency. When the Syndesis UI's dependencies are installed during the **yarn install** step, the Data Mapper UI will be cloned from the NPM package repository into the **${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap.data.mapper** directory. 
+The Data Mapper UI is referenced by Syndesis as a dependency. When the Syndesis UI's dependencies are installed during the **yarn install** step, the Data Mapper UI will be cloned from the NPM package repository into the **${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap-data-mapper** directory. 
 
 You can point your local Syndesis UI's Data Mapper UI reference to your working copy of the Data Mapper by changing the **src** directory in the node_modules folder to point to your code. You'll do something like this:
 
 ```
     # save the original data mapper library contents for syndesis in case we want to use that version again later.
     # ${SYNDESIS}/ui is your local syndesis ui directory. 
-    > mv ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap.data.mapper/src ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap.data.mapper/src.old
+    > mv ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap-data-mapper/src ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap-data-mapper/src.old
 
     # ${ATLASMAP}/ui is your local data mapper ui directory
-    > ln -s ${ATLASMAP}/ui/src ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap.data.mapper/src
+    > ln -s ${ATLASMAP}/ui/src ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap-data-mapper/src
 ```
 
 After making this change, restart the Syndesis UI with **yarn start**.
 
-Note that running `yarn install` in the Syndesis UI directory **will remove and redownload the ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap.data.mapper directory**. For this reason, do *not* make changes within the **${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap.data.mapper** directory. Instead, make changes in another directory and use the soft link (`ln -s`) command shown above to point the Syndesis UI dependency to your code. 
+Note that running `yarn install` in the Syndesis UI directory **will remove and redownload the ${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap-data-mapper directory**. For this reason, do *not* make changes within the **${SYNDESIS}/ui/node_modules/@atlasmap/atlasmap-data-mapper** directory. Instead, make changes in another directory and use the soft link (`ln -s`) command shown above to point the Syndesis UI dependency to your code. 
 
 
 ## Debug Configuration ##

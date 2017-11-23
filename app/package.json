@@ -42,7 +42,7 @@
     "@angular/platform-browser": "4.4.5",
     "@angular/platform-browser-dynamic": "4.4.5",
     "@angular/router": "4.4.5",
-    "@atlasmap/atlasmap.data.mapper": ">=1.32.0-SNAPSHOT",
+    "@atlasmap/atlasmap-data-mapper": ">=1.32.0-SNAPSHOT",
     "angular-in-memory-web-api": ">=0.3.2",
     "bootstrap": "^3.3.7",
     "core-js": "^2.4.1",

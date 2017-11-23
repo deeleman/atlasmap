@@ -5,7 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
-import { DataMapperModule } from '@atlasmap/atlasmap.data.mapper';
+import { DataMapperModule } from '@atlasmap/atlasmap-data-mapper';
 
 import { AppComponent } from './app.component';
 
