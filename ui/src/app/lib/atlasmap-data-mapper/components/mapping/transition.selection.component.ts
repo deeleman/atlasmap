@@ -35,7 +35,7 @@ import { LookupTableComponent } from './lookup.table.component';
                 </div>
                 <div *ngIf="!modeIsEnum()">
                     <label>Action</label>
-                    <select (change)="selectionChanged($event);" selector="mode"
+                    <select  id="select-action" (change)="selectionChanged($event);" selector="mode"
                         [ngModel]="fieldPair.transition.mode">
                         <option value="{{modes.COMBINE}}">Combine</option>
                         <option value="{{modes.MAP}}">Map</option>
@@ -45,7 +45,7 @@ import { LookupTableComponent } from './lookup.table.component';
                 </div>
                 <div *ngIf="fieldPair.transition.isSeparateMode() || fieldPair.transition.isCombineMode()" style="margin-top:10px;">
                     <label>Separator:</label>
-                    <select (change)="selectionChanged($event);" selector="separator"
+                    <select  id="select-separator" (change)="selectionChanged($event);" selector="separator"
                         [ngModel]="fieldPair.transition.delimiter">
                         <option value="{{delimeters.COLON}}">Colon</option>
                         <option value="{{delimeters.COMMA}}">Comma</option>
@@ -63,8 +63,8 @@ export class TransitionSelectionComponent {
     @Input() modalWindow: ModalWindowComponent;
     @Input() fieldPair: FieldMappingPair;
 
-    private modes: any = TransitionMode;
-    private delimeters: any = TransitionDelimiter;
+    modes = TransitionMode;
+    delimeters = TransitionDelimiter;
 
     selectionChanged(event: any): void {
         const selectorIsMode: boolean = 'mode' == event.target.attributes.getNamedItem('selector').value;
@@ -77,15 +77,11 @@ export class TransitionSelectionComponent {
         this.cfg.mappingService.updateMappedField(this.fieldPair);
     }
 
-    private modeIsEnum(): boolean {
+    modeIsEnum(): boolean {
         return this.fieldPair.transition.isEnumerationMode();
     }
 
-    private modeIsCombine(): boolean {
-        return this.fieldPair.transition.isCombineMode();
-    }
-
-    private getMappedValueCount(): number {
+    getMappedValueCount(): number {
         const tableName: string = this.fieldPair.transition.lookupTableName;
         if (tableName == null) {
             return 0;
@@ -97,7 +93,7 @@ export class TransitionSelectionComponent {
         return table.entries.length;
     }
 
-    private showLookupTable(): void {
+    showLookupTable(): void {
         const mapping: MappingModel = this.cfg.mappings.activeMapping;
         if (!mapping.hasMappedFields(true) || !mapping.hasMappedFields(false)) {
             this.cfg.errorService.warn('Please select source and target fields before mapping values.', null);
