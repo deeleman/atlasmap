@@ -13061,8 +13061,6 @@ var DocumentDefinition = (function () {
      * @return {?}
      */
     DocumentDefinition.prototype.updateFromMappings = function (mappingDefinition, cfg) {
-        var /** @type {?} */ activeMapping = mappingDefinition.activeMapping;
-        var /** @type {?} */ collectionMode = (activeMapping != null && activeMapping.isCollectionMode());
         for (var _b = 0, _c = this.allFields; _b < _c.length; _b++) {
             var field = _c[_b];
             field.partOfMapping = false;
@@ -13736,7 +13734,6 @@ var DocumentManagementService = (function () {
     DocumentManagementService.prototype.extractJSONDocumentDefinitionFromInspectionResponse = function (responseJson, docDef) {
         var /** @type {?} */ body = responseJson.JsonInspectionResponse;
         if (body.errorMessage) {
-            var /** @type {?} */ docIdentifier = docDef.initCfg.documentIdentifier;
             this.handleError('Could not load JSON document, error: ' + body.errorMessage, null);
             docDef.initCfg.errorOccurred = true;
             return;
@@ -13771,7 +13768,6 @@ var DocumentManagementService = (function () {
     DocumentManagementService.prototype.extractXMLDocumentDefinitionFromInspectionResponse = function (responseJson, docDef) {
         var /** @type {?} */ body = responseJson.XmlInspectionResponse;
         if (body.errorMessage) {
-            var /** @type {?} */ docIdentifier = docDef.initCfg.documentIdentifier;
             this.handleError('Could not load XML document, error: ' + body.errorMessage, null);
             docDef.initCfg.errorOccurred = true;
             return;
@@ -13818,7 +13814,6 @@ var DocumentManagementService = (function () {
     DocumentManagementService.prototype.extractJavaDocumentDefinitionFromInspectionResponse = function (responseJson, docDef) {
         var /** @type {?} */ body = responseJson.ClassInspectionResponse;
         if (body.errorMessage) {
-            var /** @type {?} */ docIdentifier = docDef.initCfg.documentIdentifier;
             this.handleError('Could not load Java document, error: ' + body.errorMessage, null);
             docDef.initCfg.errorOccurred = true;
             return;
@@ -15804,9 +15799,9 @@ var MappingManagementService = (function () {
             return;
         }
         var /** @type {?} */ mapping = this.cfg.mappings.activeMapping;
-        if (mapping != null && mapping.hasMappedFields(field.isSource())
+        if (mapping != null
+            && mapping.hasMappedFields(field.isSource())
             && !mapping.isFieldMapped(field, field.isSource())) {
-            var /** @type {?} */ type = field.isSource() ? 'source' : 'target';
             mapping = null;
         }
         if (mapping == null) {
@@ -17047,8 +17042,13 @@ var DataMapperAppExampleHostComponent = (function () {
      */
     function DataMapperAppExampleHostComponent(initializationService) {
         this.initializationService = initializationService;
+    }
+    /**
+     * @return {?}
+     */
+    DataMapperAppExampleHostComponent.prototype.ngOnInit = function () {
         // initialize config information before initializing services
-        var c = initializationService.cfg;
+        var /** @type {?} */ c = this.initializationService.cfg;
         //store references to our services in our config model
         //initialize base urls for our service calls
         c.initCfg.baseJavaInspectionServiceUrl = 'http://localhost:8585/v2/atlas/java/';
@@ -17109,21 +17109,16 @@ var DataMapperAppExampleHostComponent = (function () {
         c.initCfg.addMockJSONInstanceTarget = false;
         c.initCfg.addMockJSONSchemaTarget = true;
         //initialize system
-        initializationService.initialize();
+        this.initializationService.initialize();
         //save the mappings when the ui calls us back asking for save
         c.mappingService.saveMappingOutput$.subscribe(function (saveHandler) {
             //NOTE: the mapping definition being saved is currently stored in "this.cfg.mappings" until further notice.
-            //turn this on to print out example json
-            var makeExampleJSON = false;
-            if (makeExampleJSON) {
-                var jsonObject = c.mappingService.serializeMappingsToJSON();
-            }
             //This is an example callout to save the mapping to the mock java service
             c.mappingService.saveMappingToService();
             //After you've sucessfully saved you *MUST* call this (don't call on error)
             c.mappingService.handleMappingSaveSuccess(saveHandler);
         });
-    }
+    };
     return DataMapperAppExampleHostComponent;
 }());
 DataMapperAppExampleHostComponent.decorators = [
@@ -17244,7 +17239,6 @@ var DataMapperErrorComponent = (function () {
      * @return {?}
      */
     DataMapperErrorComponent.prototype.getErrors = function () {
-        var /** @type {?} */ test = ConfigModel.getConfig().validationErrors;
         return this.isValidation ? ConfigModel.getConfig().validationErrors.filter(function (e) { return e.level >= ErrorLevel.ERROR; })
             : ConfigModel.getConfig().errors;
     };
@@ -18301,8 +18295,10 @@ var DocumentDefinitionComponent = (function () {
                 var /** @type {?} */ documentElementAbsPosition = this.getElementPositionForElement(c.nativeElement, false, true);
                 var /** @type {?} */ myElement = this.documentDefinitionElement.nativeElement;
                 var /** @type {?} */ myAbsPosition = this.getElementPositionForElement(myElement, false, false);
-                return { 'x': (documentElementAbsPosition.x - myAbsPosition.x),
-                    'y': (documentElementAbsPosition.y - myAbsPosition.y) };
+                return {
+                    'x': (documentElementAbsPosition.x - myAbsPosition.x),
+                    'y': (documentElementAbsPosition.y - myAbsPosition.y)
+                };
             }
         }
         return null;
@@ -18381,36 +18377,6 @@ var DocumentDefinitionComponent = (function () {
         }
     };
     /**
-     * @param {?} docDef
-     * @return {?}
-     */
-    DocumentDefinitionComponent.prototype.isAddFieldAvailable = function (docDef) {
-        return docDef.initCfg.type.isPropertyOrConstant()
-            || (!docDef.isSource && docDef.initCfg.type.isJSON())
-            || (!docDef.isSource && docDef.initCfg.type.isXML());
-    };
-    /**
-     * @param {?} docDef
-     * @return {?}
-     */
-    DocumentDefinitionComponent.prototype.isDocNameVisible = function (docDef) {
-        if (this.searchMode && !docDef.visibleInCurrentDocumentSearch) {
-            return false;
-        }
-        return true;
-    };
-    /**
-     * @param {?} docDef
-     * @return {?}
-     */
-    DocumentDefinitionComponent.prototype.toggleFieldVisibility = function (docDef) {
-        var _this = this;
-        docDef.showFields = !docDef.showFields;
-        setTimeout(function () {
-            _this.lineMachine.redrawLinesForMappings();
-        }, 10);
-    };
-    /**
      * @return {?}
      */
     DocumentDefinitionComponent.prototype.getFieldCount = function () {
@@ -18422,39 +18388,6 @@ var DocumentDefinitionComponent = (function () {
             }
         }
         return count;
-    };
-    /**
-     * @param {?} searchFilter
-     * @return {?}
-     */
-    DocumentDefinitionComponent.prototype.search = function (searchFilter) {
-        this.searchResultsExist = false;
-        var /** @type {?} */ searchIsEmpty = (searchFilter == null) || ('' == searchFilter);
-        var /** @type {?} */ defaultVisibility = searchIsEmpty ? true : false;
-        for (var _b = 0, _c = this.cfg.getDocs(this.isSource); _b < _c.length; _b++) {
-            var docDef = _c[_b];
-            docDef.visibleInCurrentDocumentSearch = defaultVisibility;
-            for (var _d = 0, _e = docDef.getAllFields(); _d < _e.length; _d++) {
-                var field = _e[_d];
-                field.visibleInCurrentDocumentSearch = defaultVisibility;
-            }
-            if (!searchIsEmpty) {
-                for (var _f = 0, _g = docDef.getTerminalFields(); _f < _g.length; _f++) {
-                    var field = _g[_f];
-                    field.visibleInCurrentDocumentSearch = field.name.toLowerCase().includes(searchFilter.toLowerCase());
-                    this.searchResultsExist = this.searchResultsExist || field.visibleInCurrentDocumentSearch;
-                    if (field.visibleInCurrentDocumentSearch) {
-                        docDef.visibleInCurrentDocumentSearch = true;
-                        var /** @type {?} */ parentField = field.parentField;
-                        while (parentField != null) {
-                            parentField.visibleInCurrentDocumentSearch = true;
-                            parentField.collapsed = false;
-                            parentField = parentField.parentField;
-                        }
-                    }
-                }
-            }
-        }
     };
     /**
      * @param {?} event
@@ -18518,6 +18451,69 @@ var DocumentDefinitionComponent = (function () {
             self.cfg.mappingService.saveCurrentMapping();
         };
         this.modalWindow.show();
+    };
+    /**
+     * @param {?} docDef
+     * @return {?}
+     */
+    DocumentDefinitionComponent.prototype.isDocNameVisible = function (docDef) {
+        if (this.searchMode && !docDef.visibleInCurrentDocumentSearch) {
+            return false;
+        }
+        return true;
+    };
+    /**
+     * @param {?} docDef
+     * @return {?}
+     */
+    DocumentDefinitionComponent.prototype.toggleFieldVisibility = function (docDef) {
+        var _this = this;
+        docDef.showFields = !docDef.showFields;
+        setTimeout(function () {
+            _this.lineMachine.redrawLinesForMappings();
+        }, 10);
+    };
+    /**
+     * @param {?} docDef
+     * @return {?}
+     */
+    DocumentDefinitionComponent.prototype.isAddFieldAvailable = function (docDef) {
+        return docDef.initCfg.type.isPropertyOrConstant()
+            || (!docDef.isSource && docDef.initCfg.type.isJSON())
+            || (!docDef.isSource && docDef.initCfg.type.isXML());
+    };
+    /**
+     * @param {?} searchFilter
+     * @return {?}
+     */
+    DocumentDefinitionComponent.prototype.search = function (searchFilter) {
+        this.searchResultsExist = false;
+        var /** @type {?} */ searchIsEmpty = (searchFilter == null) || ('' == searchFilter);
+        var /** @type {?} */ defaultVisibility = searchIsEmpty ? true : false;
+        for (var _b = 0, _c = this.cfg.getDocs(this.isSource); _b < _c.length; _b++) {
+            var docDef = _c[_b];
+            docDef.visibleInCurrentDocumentSearch = defaultVisibility;
+            for (var _d = 0, _e = docDef.getAllFields(); _d < _e.length; _d++) {
+                var field = _e[_d];
+                field.visibleInCurrentDocumentSearch = defaultVisibility;
+            }
+            if (!searchIsEmpty) {
+                for (var _f = 0, _g = docDef.getTerminalFields(); _f < _g.length; _f++) {
+                    var field = _g[_f];
+                    field.visibleInCurrentDocumentSearch = field.name.toLowerCase().includes(searchFilter.toLowerCase());
+                    this.searchResultsExist = this.searchResultsExist || field.visibleInCurrentDocumentSearch;
+                    if (field.visibleInCurrentDocumentSearch) {
+                        docDef.visibleInCurrentDocumentSearch = true;
+                        var /** @type {?} */ parentField = field.parentField;
+                        while (parentField != null) {
+                            parentField.visibleInCurrentDocumentSearch = true;
+                            parentField.collapsed = false;
+                            parentField = parentField.parentField;
+                        }
+                    }
+                }
+            }
+        }
     };
     return DocumentDefinitionComponent;
 }());
@@ -18608,7 +18604,6 @@ var DocumentFieldDetailComponent = (function () {
     DocumentFieldDetailComponent.prototype.endDrag = function (event) {
         this.isDragDropTarget = false;
         if (!this.field.isTerminal() || (this.field.isSource() == this.cfg.currentDraggedField.isSource())) {
-            var /** @type {?} */ desc = this.field.isSource() ? 'source' : 'target';
             return;
         }
         var /** @type {?} */ droppedField = this.cfg.currentDraggedField;
@@ -19219,7 +19214,6 @@ var NamespaceListComponent = (function () {
             ns = new NamespaceModel();
             ns.createdByUser = true;
         }
-        var /** @type {?} */ self = this;
         this.modalWindow.reset();
         this.modalWindow.confirmButtonText = 'Save';
         this.modalWindow.headerText = (ns == null) ? 'Add Namespace' : 'Edit Namespace';
@@ -19238,7 +19232,7 @@ var NamespaceListComponent = (function () {
                 _this.cfg.getFirstXmlDoc(false).namespaces.push(newNamespace);
             }
             _this.search(_this.searchFilter);
-            self.cfg.mappingService.saveCurrentMapping();
+            _this.cfg.mappingService.saveCurrentMapping();
         };
         this.modalWindow.show();
     };
@@ -19286,7 +19280,6 @@ var NamespaceListComponent = (function () {
      */
     NamespaceListComponent.prototype.removeNamespace = function (ns, event) {
         var _this = this;
-        event.stopPropagation();
         event.stopPropagation();
         this.modalWindow.reset();
         this.modalWindow.confirmButtonText = 'Remove';
@@ -19863,7 +19856,7 @@ var MappingFieldDetailComponent = (function () {
 MappingFieldDetailComponent.decorators = [
     { type: Component, args: [{
                 selector: 'mapping-field-detail',
-                template: "\n        <!-- our template for type ahead -->\n        <ng-template #typeaheadTemplate let-model=\"item\" let-index=\"index\">\n            <h5 style=\"font-style:italic;\">{{ model['field'].docDef == null ? '' : model['field'].docDef.name }}</h5>\n            <h5>{{ model['field'].path }}</h5>\n        </ng-template>\n\n        <!-- our template for tooltip popover -->\n        <ng-template #tolTemplate>\n            <div class=\"fieldDetailTooltip\">\n                <label class=\"parentObjectName\" *ngIf=\"displayParentObject()\">\n                    <i [attr.class]=\"getSourceIconCSSClass()\"></i>\n                    {{ getParentObjectName() }}\n                </label>\n                <label>{{ getFieldPath() }}</label>\n                <label *ngIf=\"displayParentObject() && mappedField.field.type\">({{ mappedField.field.type }})</label>\n                <div class=\"clear\"></div>\n            </div>\n        </ng-template>\n\n        <div class='fieldDetail' style=\"margin-bottom:5px;\" *ngIf=\"mappedField\"\n            [tooltip]=\"tolTemplate\" placement=\"left\">\n            <label class=\"parentObjectName\" *ngIf=\"displayParentObject()\">\n                <i [attr.class]=\"getSourceIconCSSClass()\"></i>\n                {{ getParentObjectName() }}\n            </label>\n            <div style=\"width:100%;\">\n                <input type=\"text\" [ngModel]=\"mappedField.field.getFieldLabel(false)\" [typeahead]=\"dataSource\"\n                    typeaheadWaitMs=\"200\" (typeaheadOnSelect)=\"selectionChanged($event)\"\n                    typeaheadOptionField=\"displayName\" [typeaheadItemTemplate]=\"typeaheadTemplate\">\n            </div>\n        </div>\n    ",
+                template: "\n        <!-- our template for type ahead -->\n        <ng-template #typeaheadTemplate let-model=\"item\" let-index=\"index\">\n            <h5 style=\"font-style:italic;\">{{ model['field'].docDef == null ? '' : model['field'].docDef.name }}</h5>\n            <h5>{{ model['field'].path }}</h5>\n        </ng-template>\n\n        <!-- our template for tooltip popover -->\n        <ng-template #tolTemplate>\n            <div class=\"fieldDetailTooltip\">\n                <label class=\"parentObjectName\" *ngIf=\"displayParentObject()\">\n                    <i [attr.class]=\"getSourceIconCSSClass()\"></i>\n                    {{ getParentObjectName() }}\n                </label>\n                <label>{{ getFieldPath() }}</label>\n                <label *ngIf=\"displayParentObject() && mappedField.field.type\">({{ mappedField.field.type }})</label>\n                <div class=\"clear\"></div>\n            </div>\n        </ng-template>\n\n        <div class='fieldDetail' style=\"margin-bottom:5px;\" *ngIf=\"mappedField\"\n            [tooltip]=\"tolTemplate\" placement=\"left\">\n            <label class=\"parentObjectName\" *ngIf=\"displayParentObject()\">\n                <i [attr.class]=\"getSourceIconCSSClass()\"></i>\n                {{ getParentObjectName() }}\n            </label>\n            <div style=\"width:100%;\">\n                <input type=\"text\" id=\"input-{{isSource?'source':'target'}}-{{mappedField.field.getFieldLabel(false)}}\"\n                    [ngModel]=\"mappedField.field.getFieldLabel(false)\" [typeahead]=\"dataSource\"\n                    typeaheadWaitMs=\"200\" (typeaheadOnSelect)=\"selectionChanged($event)\"\n                    typeaheadOptionField=\"displayName\" [typeaheadItemTemplate]=\"typeaheadTemplate\">\n            </div>\n        </div>\n    ",
             },] },
 ];
 /**
@@ -19973,7 +19966,7 @@ var MappingFieldActionComponent = (function () {
 MappingFieldActionComponent.decorators = [
     { type: Component, args: [{
                 selector: 'mapping-field-action',
-                template: "\n        <div class=\"mappingFieldAction\">\n            <div class=\"actionContainer\" *ngFor=\"let action of getMappedFieldActions(); let actionIndex = index\">\n                <div class=\"form-group\">\n                    <label style=\"float:left;\">{{ getActionDescription(action) }}</label>\n                    <div style=\"float:right; margin-right:5px;\" *ngIf=\"!action.isSeparateOrCombineMode\">\n                        <i class=\"fa fa-trash link\" aria-hidden=\"true\" (click)=\"removeAction(action)\"></i>\n                    </div>\n                    <div class=\"clear\"></div>\n\n                    <select (change)=\"configSelectionChanged($event);\"\n                        [ngModel]=\"action.name\" *ngIf=\"!action.isSeparateOrCombineMode\">\n                        <option *ngFor=\"let actionConfig of getActionConfigs()\"\n                            [attr.actionIndex]=\"actionIndex\"\n                            [attr.value]=\"actionConfig.name\">{{ actionConfig.name }}</option>\n                    </select>\n\n                    <div class=\"clear\"></div>\n                </div>\n                <div class=\"form-group argument\" *ngFor=\"let argConfig of action.config.arguments; let i = index\">\n                    <label style=\"\">{{ argConfig.name }}</label>\n                    <input type=\"text\" [(ngModel)]=\"action.getArgumentValue(argConfig.name).value\" (change)=\"selectionChanged($event)\"/>\n                    <div class=\"clear\"></div>\n                </div>\n            </div>\n            <div *ngIf=\"actionsExistForField() && !isSource\" class=\"linkContainer\">\n                <a (click)=\"addTransformation()\" class=\"small-primary\">Add Transformation</a>\n            </div>\n        </div>\n    ",
+                template: "\n        <div class=\"mappingFieldAction\">\n            <div class=\"actionContainer\" *ngFor=\"let action of getMappedFieldActions(); let actionIndex = index\">\n                <div class=\"form-group\">\n                    <label style=\"float:left;\">{{ getActionDescription(action) }}</label>\n                    <div style=\"float:right; margin-right:5px;\" *ngIf=\"!action.isSeparateOrCombineMode\">\n                        <i class=\"fa fa-trash link\" aria-hidden=\"true\" (click)=\"removeAction(action)\"></i>\n                    </div>\n                    <div class=\"clear\"></div>\n\n                    <select (change)=\"configSelectionChanged($event);\"\n                        [ngModel]=\"action.name\" *ngIf=\"!action.isSeparateOrCombineMode\">\n                        <option *ngFor=\"let actionConfig of getActionConfigs()\"\n                            [attr.actionIndex]=\"actionIndex\"\n                            [attr.value]=\"actionConfig.name\">{{ actionConfig.name }}</option>\n                    </select>\n\n                    <div class=\"clear\"></div>\n                </div>\n                <div class=\"form-group argument\" *ngFor=\"let argConfig of action.config.arguments; let i = index\">\n                    <label style=\"\">{{ argConfig.name }}</label>\n                    <input type=\"text\" id=\"input-index-{{action.getArgumentValue(argConfig.name).value}}\"\n                        [(ngModel)]=\"action.getArgumentValue(argConfig.name).value\" (change)=\"selectionChanged($event)\"/>\n                    <div class=\"clear\"></div>\n                </div>\n            </div>\n            <div *ngIf=\"actionsExistForField() && !isSource\" class=\"linkContainer\">\n                <a (click)=\"addTransformation()\" class=\"small-primary\">Add Transformation</a>\n            </div>\n        </div>\n    ",
             },] },
 ];
 /**
@@ -20119,12 +20112,6 @@ var TransitionSelectionComponent = (function () {
     /**
      * @return {?}
      */
-    TransitionSelectionComponent.prototype.modeIsCombine = function () {
-        return this.fieldPair.transition.isCombineMode();
-    };
-    /**
-     * @return {?}
-     */
     TransitionSelectionComponent.prototype.getMappedValueCount = function () {
         var /** @type {?} */ tableName = this.fieldPair.transition.lookupTableName;
         if (tableName == null) {
@@ -20166,7 +20153,7 @@ var TransitionSelectionComponent = (function () {
 TransitionSelectionComponent.decorators = [
     { type: Component, args: [{
                 selector: 'transition-selector',
-                template: "\n        <div class=\"mappingFieldContainer TransitionSelector\" *ngIf=\"cfg.mappings.activeMapping\">\n            <div class=\"MappingFieldSection\">\n                <div *ngIf=\"modeIsEnum()\" class=\"enumSection\">\n                    <label>{{ getMappedValueCount() }} values mapped</label>\n                    <i class=\"fa fa-edit link\" (click)=\"showLookupTable()\"></i>\n                </div>\n                <div *ngIf=\"!modeIsEnum()\">\n                    <label>Action</label>\n                    <select (change)=\"selectionChanged($event);\" selector=\"mode\"\n                        [ngModel]=\"fieldPair.transition.mode\">\n                        <option value=\"{{modes.COMBINE}}\">Combine</option>\n                        <option value=\"{{modes.MAP}}\">Map</option>\n                        <option value=\"{{modes.SEPARATE}}\">Separate</option>\n                    </select>\n                    <div class=\"clear\"></div>\n                </div>\n                <div *ngIf=\"fieldPair.transition.isSeparateMode() || fieldPair.transition.isCombineMode()\" style=\"margin-top:10px;\">\n                    <label>Separator:</label>\n                    <select (change)=\"selectionChanged($event);\" selector=\"separator\"\n                        [ngModel]=\"fieldPair.transition.delimiter\">\n                        <option value=\"{{delimeters.COLON}}\">Colon</option>\n                        <option value=\"{{delimeters.COMMA}}\">Comma</option>\n                        <option value=\"{{delimeters.MULTISPACE}}\">Multispace</option>\n                        <option value=\"{{delimeters.SPACE}}\">Space</option>\n                    </select>\n                </div>\n            </div>\n        </div>\n    ",
+                template: "\n        <div class=\"mappingFieldContainer TransitionSelector\" *ngIf=\"cfg.mappings.activeMapping\">\n            <div class=\"MappingFieldSection\">\n                <div *ngIf=\"modeIsEnum()\" class=\"enumSection\">\n                    <label>{{ getMappedValueCount() }} values mapped</label>\n                    <i class=\"fa fa-edit link\" (click)=\"showLookupTable()\"></i>\n                </div>\n                <div *ngIf=\"!modeIsEnum()\">\n                    <label>Action</label>\n                    <select  id=\"select-action\" (change)=\"selectionChanged($event);\" selector=\"mode\"\n                        [ngModel]=\"fieldPair.transition.mode\">\n                        <option value=\"{{modes.COMBINE}}\">Combine</option>\n                        <option value=\"{{modes.MAP}}\">Map</option>\n                        <option value=\"{{modes.SEPARATE}}\">Separate</option>\n                    </select>\n                    <div class=\"clear\"></div>\n                </div>\n                <div *ngIf=\"fieldPair.transition.isSeparateMode() || fieldPair.transition.isCombineMode()\" style=\"margin-top:10px;\">\n                    <label>Separator:</label>\n                    <select  id=\"select-separator\" (change)=\"selectionChanged($event);\" selector=\"separator\"\n                        [ngModel]=\"fieldPair.transition.delimiter\">\n                        <option value=\"{{delimeters.COLON}}\">Colon</option>\n                        <option value=\"{{delimeters.COMMA}}\">Comma</option>\n                        <option value=\"{{delimeters.MULTISPACE}}\">Multispace</option>\n                        <option value=\"{{delimeters.SPACE}}\">Space</option>\n                    </select>\n                </div>\n            </div>\n        </div>\n    ",
             },] },
 ];
 /**
@@ -20269,5 +20256,5 @@ DataMapperModule.ctorParameters = function () { return []; };
 /**
  * Generated bundle index. Do not edit.
  */
-export { ErrorHandlerService, DocumentManagementService, MappingManagementService, InitializationService, DocumentDefinition, MappingDefinition, ConfigModel, MappingModel, MappingSerializer, DataMapperAppComponent, DataMapperModule };
+export { ErrorHandlerService, DocumentManagementService, MappingManagementService, InitializationService, DocumentDefinition, MappingDefinition, ConfigModel, MappingModel, MappingSerializer, DataMapperAppComponent, DataMapperModule, CollapsableHeaderComponent as ɵw, ConstantFieldEditComponent as ɵv, DataMapperErrorComponent as ɵl, DataMapperAppExampleHostComponent as ɵh, DocumentDefinitionComponent as ɵa, DocumentFieldDetailComponent as ɵk, FieldEditComponent as ɵs, LineMachineComponent as ɵn, LookupTableComponent as ɵr, CollectionMappingComponent as ɵc, MappingDetailComponent as ɵe, MappingPairDetailComponent as ɵd, SimpleMappingComponent as ɵb, MappingFieldActionComponent as ɵi, MappingFieldDetailComponent as ɵj, MappingListComponent as ɵy, MappingListFieldComponent as ɵx, MappingSelectionComponent as ɵp, MappingSelectionSectionComponent as ɵo, TransitionSelectionComponent as ɵm, EmptyModalBodyComponent as ɵf, ModalWindowComponent as ɵg, NamespaceEditComponent as ɵt, NamespaceListComponent as ɵz, PropertyFieldEditComponent as ɵu, TemplateEditComponent as ɵba, ToolbarComponent as ɵq };
 //# sourceMappingURL=atlasmap-data-mapper.es5.js.map

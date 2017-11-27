@@ -13039,8 +13039,6 @@ class DocumentDefinition {
      * @return {?}
      */
     updateFromMappings(mappingDefinition, cfg) {
-        const /** @type {?} */ activeMapping = mappingDefinition.activeMapping;
-        const /** @type {?} */ collectionMode = (activeMapping != null && activeMapping.isCollectionMode());
         for (const /** @type {?} */ field of this.allFields) {
             field.partOfMapping = false;
             field.hasUnmappedChildren = false;
@@ -13691,7 +13689,6 @@ class DocumentManagementService {
     extractJSONDocumentDefinitionFromInspectionResponse(responseJson, docDef) {
         const /** @type {?} */ body = responseJson.JsonInspectionResponse;
         if (body.errorMessage) {
-            const /** @type {?} */ docIdentifier = docDef.initCfg.documentIdentifier;
             this.handleError('Could not load JSON document, error: ' + body.errorMessage, null);
             docDef.initCfg.errorOccurred = true;
             return;
@@ -13725,7 +13722,6 @@ class DocumentManagementService {
     extractXMLDocumentDefinitionFromInspectionResponse(responseJson, docDef) {
         const /** @type {?} */ body = responseJson.XmlInspectionResponse;
         if (body.errorMessage) {
-            const /** @type {?} */ docIdentifier = docDef.initCfg.documentIdentifier;
             this.handleError('Could not load XML document, error: ' + body.errorMessage, null);
             docDef.initCfg.errorOccurred = true;
             return;
@@ -13770,7 +13766,6 @@ class DocumentManagementService {
     extractJavaDocumentDefinitionFromInspectionResponse(responseJson, docDef) {
         const /** @type {?} */ body = responseJson.ClassInspectionResponse;
         if (body.errorMessage) {
-            const /** @type {?} */ docIdentifier = docDef.initCfg.documentIdentifier;
             this.handleError('Could not load Java document, error: ' + body.errorMessage, null);
             docDef.initCfg.errorOccurred = true;
             return;
@@ -15970,9 +15965,9 @@ class MappingManagementService {
             return;
         }
         let /** @type {?} */ mapping = this.cfg.mappings.activeMapping;
-        if (mapping != null && mapping.hasMappedFields(field.isSource())
+        if (mapping != null
+            && mapping.hasMappedFields(field.isSource())
             && !mapping.isFieldMapped(field, field.isSource())) {
-            const /** @type {?} */ type = field.isSource() ? 'source' : 'target';
             mapping = null;
         }
         if (mapping == null) {
@@ -17203,8 +17198,13 @@ class DataMapperAppExampleHostComponent {
      */
     constructor(initializationService) {
         this.initializationService = initializationService;
+    }
+    /**
+     * @return {?}
+     */
+    ngOnInit() {
         // initialize config information before initializing services
-        const c = initializationService.cfg;
+        const /** @type {?} */ c = this.initializationService.cfg;
         //store references to our services in our config model
         //initialize base urls for our service calls
         c.initCfg.baseJavaInspectionServiceUrl = 'http://localhost:8585/v2/atlas/java/';
@@ -17265,16 +17265,10 @@ class DataMapperAppExampleHostComponent {
         c.initCfg.addMockJSONInstanceTarget = false;
         c.initCfg.addMockJSONSchemaTarget = true;
         //initialize system
-        initializationService.initialize();
+        this.initializationService.initialize();
         //save the mappings when the ui calls us back asking for save
         c.mappingService.saveMappingOutput$.subscribe((saveHandler) => {
             //NOTE: the mapping definition being saved is currently stored in "this.cfg.mappings" until further notice.
-            //turn this on to print out example json
-            const makeExampleJSON = false;
-            if (makeExampleJSON) {
-                const jsonObject = c.mappingService.serializeMappingsToJSON();
-                
-            }
             //This is an example callout to save the mapping to the mock java service
             c.mappingService.saveMappingToService();
             //After you've sucessfully saved you *MUST* call this (don't call on error)
@@ -17738,7 +17732,6 @@ class DataMapperErrorComponent {
      * @return {?}
      */
     getErrors() {
-        const /** @type {?} */ test = ConfigModel.getConfig().validationErrors;
         return this.isValidation ? ConfigModel.getConfig().validationErrors.filter(e => e.level >= ErrorLevel.ERROR)
             : ConfigModel.getConfig().errors;
     }
@@ -19044,8 +19037,10 @@ class DocumentDefinitionComponent {
                 const /** @type {?} */ documentElementAbsPosition = this.getElementPositionForElement(c.nativeElement, false, true);
                 const /** @type {?} */ myElement = this.documentDefinitionElement.nativeElement;
                 const /** @type {?} */ myAbsPosition = this.getElementPositionForElement(myElement, false, false);
-                return { 'x': (documentElementAbsPosition.x - myAbsPosition.x),
-                    'y': (documentElementAbsPosition.y - myAbsPosition.y) };
+                return {
+                    'x': (documentElementAbsPosition.x - myAbsPosition.x),
+                    'y': (documentElementAbsPosition.y - myAbsPosition.y)
+                };
             }
         }
         return null;
@@ -19123,35 +19118,6 @@ class DocumentDefinitionComponent {
         }
     }
     /**
-     * @param {?} docDef
-     * @return {?}
-     */
-    isAddFieldAvailable(docDef) {
-        return docDef.initCfg.type.isPropertyOrConstant()
-            || (!docDef.isSource && docDef.initCfg.type.isJSON())
-            || (!docDef.isSource && docDef.initCfg.type.isXML());
-    }
-    /**
-     * @param {?} docDef
-     * @return {?}
-     */
-    isDocNameVisible(docDef) {
-        if (this.searchMode && !docDef.visibleInCurrentDocumentSearch) {
-            return false;
-        }
-        return true;
-    }
-    /**
-     * @param {?} docDef
-     * @return {?}
-     */
-    toggleFieldVisibility(docDef) {
-        docDef.showFields = !docDef.showFields;
-        setTimeout(() => {
-            this.lineMachine.redrawLinesForMappings();
-        }, 10);
-    }
-    /**
      * @return {?}
      */
     getFieldCount() {
@@ -19162,36 +19128,6 @@ class DocumentDefinitionComponent {
             }
         }
         return count;
-    }
-    /**
-     * @param {?} searchFilter
-     * @return {?}
-     */
-    search(searchFilter) {
-        this.searchResultsExist = false;
-        const /** @type {?} */ searchIsEmpty = (searchFilter == null) || ('' == searchFilter);
-        const /** @type {?} */ defaultVisibility = searchIsEmpty ? true : false;
-        for (const /** @type {?} */ docDef of this.cfg.getDocs(this.isSource)) {
-            docDef.visibleInCurrentDocumentSearch = defaultVisibility;
-            for (const /** @type {?} */ field of docDef.getAllFields()) {
-                field.visibleInCurrentDocumentSearch = defaultVisibility;
-            }
-            if (!searchIsEmpty) {
-                for (const /** @type {?} */ field of docDef.getTerminalFields()) {
-                    field.visibleInCurrentDocumentSearch = field.name.toLowerCase().includes(searchFilter.toLowerCase());
-                    this.searchResultsExist = this.searchResultsExist || field.visibleInCurrentDocumentSearch;
-                    if (field.visibleInCurrentDocumentSearch) {
-                        docDef.visibleInCurrentDocumentSearch = true;
-                        let /** @type {?} */ parentField = field.parentField;
-                        while (parentField != null) {
-                            parentField.visibleInCurrentDocumentSearch = true;
-                            parentField.collapsed = false;
-                            parentField = parentField.parentField;
-                        }
-                    }
-                }
-            }
-        }
     }
     /**
      * @param {?} event
@@ -19254,6 +19190,65 @@ class DocumentDefinitionComponent {
             self.cfg.mappingService.saveCurrentMapping();
         };
         this.modalWindow.show();
+    }
+    /**
+     * @param {?} docDef
+     * @return {?}
+     */
+    isDocNameVisible(docDef) {
+        if (this.searchMode && !docDef.visibleInCurrentDocumentSearch) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * @param {?} docDef
+     * @return {?}
+     */
+    toggleFieldVisibility(docDef) {
+        docDef.showFields = !docDef.showFields;
+        setTimeout(() => {
+            this.lineMachine.redrawLinesForMappings();
+        }, 10);
+    }
+    /**
+     * @param {?} docDef
+     * @return {?}
+     */
+    isAddFieldAvailable(docDef) {
+        return docDef.initCfg.type.isPropertyOrConstant()
+            || (!docDef.isSource && docDef.initCfg.type.isJSON())
+            || (!docDef.isSource && docDef.initCfg.type.isXML());
+    }
+    /**
+     * @param {?} searchFilter
+     * @return {?}
+     */
+    search(searchFilter) {
+        this.searchResultsExist = false;
+        const /** @type {?} */ searchIsEmpty = (searchFilter == null) || ('' == searchFilter);
+        const /** @type {?} */ defaultVisibility = searchIsEmpty ? true : false;
+        for (const /** @type {?} */ docDef of this.cfg.getDocs(this.isSource)) {
+            docDef.visibleInCurrentDocumentSearch = defaultVisibility;
+            for (const /** @type {?} */ field of docDef.getAllFields()) {
+                field.visibleInCurrentDocumentSearch = defaultVisibility;
+            }
+            if (!searchIsEmpty) {
+                for (const /** @type {?} */ field of docDef.getTerminalFields()) {
+                    field.visibleInCurrentDocumentSearch = field.name.toLowerCase().includes(searchFilter.toLowerCase());
+                    this.searchResultsExist = this.searchResultsExist || field.visibleInCurrentDocumentSearch;
+                    if (field.visibleInCurrentDocumentSearch) {
+                        docDef.visibleInCurrentDocumentSearch = true;
+                        let /** @type {?} */ parentField = field.parentField;
+                        while (parentField != null) {
+                            parentField.visibleInCurrentDocumentSearch = true;
+                            parentField.collapsed = false;
+                            parentField = parentField.parentField;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 DocumentDefinitionComponent.decorators = [
@@ -19399,7 +19394,6 @@ class DocumentFieldDetailComponent {
     endDrag(event) {
         this.isDragDropTarget = false;
         if (!this.field.isTerminal() || (this.field.isSource() == this.cfg.currentDraggedField.isSource())) {
-            const /** @type {?} */ desc = this.field.isSource() ? 'source' : 'target';
             return;
         }
         const /** @type {?} */ droppedField = this.cfg.currentDraggedField;
@@ -20139,7 +20133,6 @@ class NamespaceListComponent {
             ns = new NamespaceModel();
             ns.createdByUser = true;
         }
-        const /** @type {?} */ self = this;
         this.modalWindow.reset();
         this.modalWindow.confirmButtonText = 'Save';
         this.modalWindow.headerText = (ns == null) ? 'Add Namespace' : 'Edit Namespace';
@@ -20158,7 +20151,7 @@ class NamespaceListComponent {
                 this.cfg.getFirstXmlDoc(false).namespaces.push(newNamespace);
             }
             this.search(this.searchFilter);
-            self.cfg.mappingService.saveCurrentMapping();
+            this.cfg.mappingService.saveCurrentMapping();
         };
         this.modalWindow.show();
     }
@@ -20205,7 +20198,6 @@ class NamespaceListComponent {
      * @return {?}
      */
     removeNamespace(ns, event) {
-        event.stopPropagation();
         event.stopPropagation();
         this.modalWindow.reset();
         this.modalWindow.confirmButtonText = 'Remove';
@@ -21016,7 +21008,8 @@ MappingFieldDetailComponent.decorators = [
                 {{ getParentObjectName() }}
             </label>
             <div style="width:100%;">
-                <input type="text" [ngModel]="mappedField.field.getFieldLabel(false)" [typeahead]="dataSource"
+                <input type="text" id="input-{{isSource?'source':'target'}}-{{mappedField.field.getFieldLabel(false)}}"
+                    [ngModel]="mappedField.field.getFieldLabel(false)" [typeahead]="dataSource"
                     typeaheadWaitMs="200" (typeaheadOnSelect)="selectionChanged($event)"
                     typeaheadOptionField="displayName" [typeaheadItemTemplate]="typeaheadTemplate">
             </div>
@@ -21149,7 +21142,8 @@ MappingFieldActionComponent.decorators = [
                 </div>
                 <div class="form-group argument" *ngFor="let argConfig of action.config.arguments; let i = index">
                     <label style="">{{ argConfig.name }}</label>
-                    <input type="text" [(ngModel)]="action.getArgumentValue(argConfig.name).value" (change)="selectionChanged($event)"/>
+                    <input type="text" id="input-index-{{action.getArgumentValue(argConfig.name).value}}"
+                        [(ngModel)]="action.getArgumentValue(argConfig.name).value" (change)="selectionChanged($event)"/>
                     <div class="clear"></div>
                 </div>
             </div>
@@ -21307,12 +21301,6 @@ class TransitionSelectionComponent {
     /**
      * @return {?}
      */
-    modeIsCombine() {
-        return this.fieldPair.transition.isCombineMode();
-    }
-    /**
-     * @return {?}
-     */
     getMappedValueCount() {
         const /** @type {?} */ tableName = this.fieldPair.transition.lookupTableName;
         if (tableName == null) {
@@ -21361,7 +21349,7 @@ TransitionSelectionComponent.decorators = [
                 </div>
                 <div *ngIf="!modeIsEnum()">
                     <label>Action</label>
-                    <select (change)="selectionChanged($event);" selector="mode"
+                    <select  id="select-action" (change)="selectionChanged($event);" selector="mode"
                         [ngModel]="fieldPair.transition.mode">
                         <option value="{{modes.COMBINE}}">Combine</option>
                         <option value="{{modes.MAP}}">Map</option>
@@ -21371,7 +21359,7 @@ TransitionSelectionComponent.decorators = [
                 </div>
                 <div *ngIf="fieldPair.transition.isSeparateMode() || fieldPair.transition.isCombineMode()" style="margin-top:10px;">
                     <label>Separator:</label>
-                    <select (change)="selectionChanged($event);" selector="separator"
+                    <select  id="select-separator" (change)="selectionChanged($event);" selector="separator"
                         [ngModel]="fieldPair.transition.delimiter">
                         <option value="{{delimeters.COLON}}">Colon</option>
                         <option value="{{delimeters.COMMA}}">Comma</option>
@@ -21484,5 +21472,5 @@ DataMapperModule.ctorParameters = () => [];
  * Generated bundle index. Do not edit.
  */
 
-export { ErrorHandlerService, DocumentManagementService, MappingManagementService, InitializationService, DocumentDefinition, MappingDefinition, ConfigModel, MappingModel, MappingSerializer, DataMapperAppComponent, DataMapperModule };
+export { ErrorHandlerService, DocumentManagementService, MappingManagementService, InitializationService, DocumentDefinition, MappingDefinition, ConfigModel, MappingModel, MappingSerializer, DataMapperAppComponent, DataMapperModule, CollapsableHeaderComponent as ɵw, ConstantFieldEditComponent as ɵv, DataMapperErrorComponent as ɵl, DataMapperAppExampleHostComponent as ɵh, DocumentDefinitionComponent as ɵa, DocumentFieldDetailComponent as ɵk, FieldEditComponent as ɵs, LineMachineComponent as ɵn, LookupTableComponent as ɵr, CollectionMappingComponent as ɵc, MappingDetailComponent as ɵe, MappingPairDetailComponent as ɵd, SimpleMappingComponent as ɵb, MappingFieldActionComponent as ɵi, MappingFieldDetailComponent as ɵj, MappingListComponent as ɵy, MappingListFieldComponent as ɵx, MappingSelectionComponent as ɵp, MappingSelectionSectionComponent as ɵo, TransitionSelectionComponent as ɵm, EmptyModalBodyComponent as ɵf, ModalWindowComponent as ɵg, NamespaceEditComponent as ɵt, NamespaceListComponent as ɵz, PropertyFieldEditComponent as ɵu, TemplateEditComponent as ɵba, ToolbarComponent as ɵq };
 //# sourceMappingURL=atlasmap-data-mapper.js.map

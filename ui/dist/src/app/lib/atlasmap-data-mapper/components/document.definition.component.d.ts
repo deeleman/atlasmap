@@ -23,13 +23,13 @@ export declare class DocumentDefinitionComponent {
     getElementPositionForElement(el: any, addScrollTop: boolean, subtractScrollTop: boolean): any;
     getFieldDetailComponentPosition(field: Field): any;
     getSearchIconCSSClass(): string;
-    private getSourcesTargetsLabel();
-    private isAddFieldAvailable(docDef);
-    private isDocNameVisible(docDef);
-    private toggleFieldVisibility(docDef);
-    private getFieldCount();
+    getSourcesTargetsLabel(): string;
+    getFieldCount(): number;
+    handleScroll(event: any): void;
+    toggleSearch(): void;
+    addField(docDef: DocumentDefinition, event: any): void;
+    isDocNameVisible(docDef: DocumentDefinition): boolean;
+    toggleFieldVisibility(docDef: DocumentDefinition): void;
+    isAddFieldAvailable(docDef: DocumentDefinition): boolean;
     private search(searchFilter);
-    private handleScroll(event);
-    private toggleSearch();
-    private addField(docDef, event);
 }

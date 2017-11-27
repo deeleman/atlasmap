@@ -19,6 +19,6 @@ export declare class NamespaceListComponent {
     toggleSearch(): void;
     getSearchIconCSSClass(): string;
     namespaceMatchesSearch(ns: NamespaceModel): boolean;
-    private removeNamespace(ns, event);
+    removeNamespace(ns: NamespaceModel, event: any): void;
     private search(searchFilter);
 }

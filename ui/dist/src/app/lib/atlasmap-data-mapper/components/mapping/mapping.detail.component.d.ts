@@ -40,7 +40,7 @@ export declare class MappingDetailComponent implements OnInit {
     modalWindow: ModalWindowComponent;
     ngOnInit(): void;
     isMappingCollection(): boolean;
-    private getTitle();
-    private removeMapping(event);
+    getTitle(): string;
+    removeMapping(event: MouseEvent): void;
     private selectMapping(field);
 }
